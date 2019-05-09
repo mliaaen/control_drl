@@ -35,15 +35,16 @@ class Agent():
         self.state_size = state_size
         self.action_size = action_size
         self.seed = random.seed(random_seed)
+        self.use_batch_norm = False
 
         # Actor Network (w/ Target Network)
-        self.actor_local = Actor(state_size, action_size, random_seed).to(device)
-        self.actor_target = Actor(state_size, action_size, random_seed).to(device)
+        self.actor_local = Actor(state_size, action_size, self.use_batch_norm, random_seed).to(device)
+        self.actor_target = Actor(state_size, action_size, self.use_batch_norm, random_seed).to(device)
         self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
 
         # Critic Network (w/ Target Network)
-        self.critic_local = Critic(state_size, action_size, random_seed).to(device)
-        self.critic_target = Critic(state_size, action_size, random_seed).to(device)
+        self.critic_local = Critic(state_size, action_size, self.use_batch_norm, random_seed).to(device)
+        self.critic_target = Critic(state_size, action_size, self.use_batch_norm, random_seed).to(device)
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
 
         # Noise process
@@ -62,16 +63,34 @@ class Agent():
         #    experiences = self.memory.sample()
         #    self.learn(experiences, GAMMA)
 
-    def act(self, state, add_noise=True):
-        """Returns actions for given state as per current policy."""
-        state = torch.from_numpy(state).float().to(device)
-        self.actor_local.eval()
-        with torch.no_grad():
-            action = self.actor_local(state).cpu().data.numpy()
-        self.actor_local.train()
+    def act(self, states, add_noise=True):
+        """Act based on the given batch of states.
+        :param states: current state, array of shape == (b, state_size, )
+        :param add_noise: True to add noise to the action output
+        :return: actions for given state as per current policy.
+        """
+        states = torch.from_numpy(states).float().to(device)
+
+        #actions = self.brain.act(states).cpu().numpy()
+        actions = self.actor_local(states).cpu().data.numpy()
+
+
         if add_noise:
-            action += self.noise.sample()
-        return np.clip(action, -1, 1)
+            noises = [self.noise.sample() for _ in range(actions.shape[0])]
+            actions += noises
+
+        return np.clip(actions, -1, 1)
+
+#    def act(self, state, add_noise=True):
+#        """Returns actions for given state as per current policy."""
+#        state = torch.from_numpy(state).float().to(device)
+#        self.actor_local.eval()
+#        with torch.no_grad():
+#            action = self.actor_local(state).cpu().data.numpy()
+#        self.actor_local.train()
+#        if add_noise:
+#            action += self.noise.sample()
+#        return np.clip(action, -1, 1)
 
     def reset(self):
         self.noise.reset()
