@@ -9,11 +9,12 @@ def hidden_init(layer):
     lim = 1. / np.sqrt(fan_in)
     return -lim, lim
 
+hidden_units = 128
 
 class Actor(nn.Module):
 
     def __init__(self, state_size, action_size, use_batch_norm, seed,
-                 fc1_units=128, fc2_units=128):
+                 fc1_units=hidden_units, fc2_units=hidden_units):
         """
         :param state_size: Dimension of each state
         :param action_size: Dimension of each state
@@ -65,7 +66,7 @@ class Actor(nn.Module):
 class Critic(nn.Module):
 
     def __init__(self, state_size, action_size, use_batch_norm, seed,
-                 fc1_units=128, fc2_units=128):
+                 fc1_units=hidden_units, fc2_units=hidden_units):
         """
         :param duel_network: boolean
         :param state_size: Dimension of each state

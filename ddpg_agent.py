@@ -73,30 +73,7 @@ class Agent():
                 experiences = self.memory.sample()
                 self.learn(experiences, GAMMA)
 
-        #self.memory.add(state, action, reward, next_state, done)
 
-        # Learn, if enough samples are available in memory
-        #if len(self.memory) > BATCH_SIZE:
-        #    experiences = self.memory.sample()
-        #    self.learn(experiences, GAMMA)
-
-    #def act(self, states, add_noise=True):
-    #    """Act based on the given batch of states.
-    #    :param states: current state, array of shape == (b, state_size, )
-    #    :param add_noise: True to add noise to the action output
-    #    :return: actions for given state as per current policy.
-    #    """
-    #    states = torch.from_numpy(states).float().to(device)
-    
-        #actions = self.brain.act(states).cpu().numpy()
-    #    actions = self.actor_local(states).cpu().data.numpy()
-
-
-     #   if add_noise:
-      #      noises = [self.noise.sample() for _ in range(actions.shape[0])]
-       #     actions += noises
- 
-       # return np.clip(actions, -1, 1)
     def act(self, state, add_noise=True):
         """Returns actions for given state as per current policy."""
 
@@ -113,24 +90,9 @@ class Agent():
         return action
 
     
-#    def act(self, state, add_noise=True):
-#        """Returns actions for given state as per current policy."""
-#        state = torch.from_numpy(state).float().to(device)
-#        self.actor_local.eval()
-#        with torch.no_grad():
-#            action = self.actor_local(state).cpu().data.numpy()
-#        self.actor_local.train()
-#        if add_noise:
-#            action += self.noise.sample()
-#        return np.clip(action, -1, 1)
-
     def reset(self):
         self.noise.reset()
         
-    #def start_learn(self):
-    #    if len(self.memory) > BATCH_SIZE:
-    #        experiences = self.memory.sample()
-    #        self.learn(experiences, GAMMA)
 
     def learn(self, experiences, gamma):
         """Update policy and value parameters using given batch of experience tuples.
@@ -161,7 +123,7 @@ class Agent():
         # Minimize the loss
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.critic_local.parameters(), 1)
+        torch.nn.utils.clip_grad_norm_(self.critic_local.parameters(), 1) # dont get wild
         self.critic_optimizer.step()
 
 
