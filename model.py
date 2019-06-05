@@ -9,11 +9,11 @@ def hidden_init(layer):
     lim = 1. / np.sqrt(fan_in)
     return -lim, lim
 
-hidden_units = 256
+hidden_units = 128
 
 class Actor(nn.Module):
 
-    def __init__(self, state_size, action_size, seed, use_batch_norm=False,
+    def __init__(self, state_size, action_size, use_batch_norm, seed,
                  fc1_units=hidden_units, fc2_units=hidden_units):
         """
         :param state_size: Dimension of each state
@@ -37,7 +37,7 @@ class Actor(nn.Module):
         use_bias = not use_batch_norm
 
         self.use_batch_norm = use_batch_norm
-        self.fc1 = nn.Linear(state_size*2, fc1_units, bias=use_bias)
+        self.fc1 = nn.Linear(state_size, fc1_units, bias=use_bias)
         self.fc2 = nn.Linear(fc1_units, fc2_units, bias=use_bias)
         self.fc3 = nn.Linear(fc2_units, action_size, bias=use_bias)
         self.reset_parameters()
@@ -65,7 +65,7 @@ class Actor(nn.Module):
 
 class Critic(nn.Module):
 
-    def __init__(self, state_size, action_size, seed, use_batch_norm=False,
+    def __init__(self, state_size, action_size, use_batch_norm, seed,
                  fc1_units=hidden_units, fc2_units=hidden_units):
         """
         :param duel_network: boolean
@@ -87,8 +87,8 @@ class Critic(nn.Module):
         use_bias = not use_batch_norm
 
         self.use_batch_norm = use_batch_norm
-        self.fc1 = nn.Linear(state_size * 2, fc1_units, bias=use_bias)
-        self.fc2 = nn.Linear(fc1_units + action_size * 2, fc2_units)
+        self.fc1 = nn.Linear(state_size, fc1_units, bias=use_bias)
+        self.fc2 = nn.Linear(fc1_units + action_size, fc2_units)
         self.fc3 = nn.Linear(fc2_units, 1)
         self.reset_parameters()
 
@@ -99,14 +99,12 @@ class Critic(nn.Module):
         :return: q-values values
         """
 
-        #if self.use_batch_norm:
-        #    x = F.relu(self.fc1(self.bn1(state)))
-        #else:
-        #    )
+        if self.use_batch_norm:
+            x = F.relu(self.fc1(self.bn1(state)))
+        else:
+            x = F.relu(self.fc1(state))
 
-        x = F.relu(self.fc1(state))
         x = torch.cat((x, action), dim=1)
-        #print(x.size())
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
